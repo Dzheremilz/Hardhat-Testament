@@ -87,6 +87,7 @@ describe('Testament', function () {
       await testament.connect(owner).bequeath(heir1.address, { gasPrice: 0, value: SEND_AMOUNT });
       expect(await testament.benefactorOf(heir1.address)).to.equal(SEND_AMOUNT);
       expect(await owner.getBalance()).to.equal(currentBalance.sub(SEND_AMOUNT));
+      expect(await testament.total()).to.equal(SEND_AMOUNT);
     });
     it('Should emit a Bequeathed event', async function () {
       expect(await testament.connect(owner).bequeath(heir1.address, { value: SEND_AMOUNT }))
@@ -137,6 +138,41 @@ describe('Testament', function () {
       await testament.connect(owner).bequeath(heir2.address, { value: SEND_AMOUNT });
       await expect(testament.connect(heir2).quoteShare()).to.be.revertedWith(
         'Testament: the owner is still alive, be patient'
+      );
+    });
+  });
+  describe('Remove', function () {
+    let currentBalance;
+    let contractBalance;
+    let remove;
+    beforeEach(async function () {
+      await testament.connect(owner).bequeath(heir1.address, { value: SEND_AMOUNT });
+      await testament.connect(owner).bequeath(heir2.address, { value: SEND_AMOUNT });
+      currentBalance = await owner.getBalance();
+      contractBalance = await testament.total();
+      remove = await testament.connect(owner).remove(heir1.address, { gasPrice: 0 });
+    });
+    it('Should get back the currency previously sent', async function () {
+      expect(await owner.getBalance()).to.equal(currentBalance.add(SEND_AMOUNT));
+    });
+    it('Should remove the amount from the contract balance', async function () {
+      expect(await testament.total()).to.equal(contractBalance.sub(SEND_AMOUNT));
+    });
+    it('Should remove the balance of the heir on the contract', async function () {
+      expect(await testament.benefactorOf(heir1.address)).to.equal(0);
+    });
+    it('Should emit a Removed event', async function () {
+      expect(remove).to.emit(testament, 'Removed').withArgs(heir1.address, SEND_AMOUNT);
+    });
+    it('Should revert if not owner', async function () {
+      await expect(testament.connect(doctor).remove(heir2.address)).to.be.revertedWith(
+        'Testament: Your are not the owner of this contract'
+      );
+    });
+    it('Should revert if owner is dead', async function () {
+      await testament.connect(doctor).passAway();
+      await expect(testament.connect(owner).remove(heir2.address)).to.be.revertedWith(
+        'Testament: Sorry you are dead, probably'
       );
     });
   });

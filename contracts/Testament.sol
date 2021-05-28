@@ -16,6 +16,7 @@ contract Testament {
     event Bequeathed(address indexed benefactor, uint256 amount);
     event Withdrew(address indexed benefactor, uint256 amount);
     event Died(address indexed doctor, address indexed owner);
+    event Removed(address indexed benefactor, uint256 amount);
 
     constructor(address owner_, address doctor_) {
         require(owner_ != doctor_, "Testament: Owner cannot be his own doctor");
@@ -57,6 +58,13 @@ contract Testament {
         require(!_isDead, "Testament: The owner is already dead");
         _isDead = true;
         emit Died(msg.sender, _owner);
+    }
+
+    function remove(address account) public onlyOwner onlyAlive {
+        uint256 amount = _beneficiaries[account];
+        _beneficiaries[account] = 0;
+        payable(_owner).sendValue(amount);
+        emit Removed(account, amount);
     }
 
     function bequeath(address account) public payable onlyOwner onlyAlive {
