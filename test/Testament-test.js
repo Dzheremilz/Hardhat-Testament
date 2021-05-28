@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* eslint-disable comma-dangle */
 /* eslint-disable no-undef */
 const { expect } = require('chai');
