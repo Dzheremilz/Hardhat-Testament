@@ -37,7 +37,7 @@ describe('Testament', function () {
       expect(await testament.doctor()).to.equal(doctor2.address);
     });
     it('Should emit a DoctorChanged event', async function () {
-      expect(await testament.connect(owner).setDoctor(doctor2.address))
+      await expect(testament.connect(owner).setDoctor(doctor2.address))
         .to.emit(testament, 'DoctorChanged')
         .withArgs(doctor2.address);
     });
@@ -64,7 +64,7 @@ describe('Testament', function () {
       expect(await testament.alive()).to.be.false;
     });
     it('Should emit a Died event', async function () {
-      expect(await testament.connect(doctor).passAway())
+      await expect(testament.connect(doctor).passAway())
         .to.emit(testament, 'Died')
         .withArgs(doctor.address, owner.address);
     });
@@ -90,7 +90,7 @@ describe('Testament', function () {
       expect(await testament.total()).to.equal(SEND_AMOUNT);
     });
     it('Should emit a Bequeathed event', async function () {
-      expect(await testament.connect(owner).bequeath(heir1.address, { value: SEND_AMOUNT }))
+      await expect(testament.connect(owner).bequeath(heir1.address, { value: SEND_AMOUNT }))
         .to.emit(testament, 'Bequeathed')
         .withArgs(heir1.address, SEND_AMOUNT);
     });
@@ -123,7 +123,7 @@ describe('Testament', function () {
       expect(await heir2.getBalance()).to.equal(currentBalance.add(SEND_AMOUNT));
     });
     it('Should emit a Withdrew event', async function () {
-      expect(await testament.connect(heir2).quoteShare({ gasPrice: 0 }))
+      await expect(testament.connect(heir2).quoteShare({ gasPrice: 0 }))
         .to.emit(testament, 'Withdrew')
         .withArgs(heir2.address, SEND_AMOUNT);
     });
